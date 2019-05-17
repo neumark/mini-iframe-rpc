@@ -1,4 +1,5 @@
 // the wonders of Javascript: Error detection https://stackoverflow.com/a/45496068
+
 // tslint:disable-next-line:no-any
 export const isError = (rejectOrError?:any) => {
     const isErrorValue = (rejectOrError !== null && rejectOrError !== undefined) &&

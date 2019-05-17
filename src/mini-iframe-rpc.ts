@@ -1,12 +1,12 @@
 /* tslint:disable no-any no-unsafe-any */
 
-import 'mdn-polyfills/Object.assign';
 import {deserializeRemoteError, EvaluationError, InvocationError, isError, ProcedureNotFoundError, SendMessageError, serializeRemoteError, TimeoutError} from './errors';
 import {DEFAULT_RESULT_CACHE_CAPACITY, ResultCache} from "./result-cache";
 export {ResultCache}; // so unit tests can access ResponseCache
 import {MessageBody, RequestMessageBody} from "./json-rpc";
 import {PostMessageTransport} from './transport/post-message-transport';
 
+declare var __VERSION__: string;
 
 export interface InvocationOptions {
     timeout: number;
@@ -47,6 +47,7 @@ const DEFAULT_INVOCATION_OPTIONS:InvocationOptions = {
 }
 
 export class MiniIframeRPC {
+    static VERSION: string = __VERSION__;        
     private config: InitParameters;
     private callbacks: {[key:string]:CallbackFunctions} = {};
     private registeredProcedures:{[key:string]: ProcedureImplementation} = {};

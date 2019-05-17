@@ -1,13 +1,14 @@
-/* global __dirname, require, module*/
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const webpack = require('webpack');
+const TerserPlugin = require('terser-webpack-plugin');
 const path = require('path');
 const env = require('yargs').argv.env; // use --env with webpack 2
 const pkg = require('./package.json');
+const browsers = require('./browsers.json');
+const exec = require('child_process').execSync;
 
 let libraryName = pkg.name;
 
-let outputFile, mode, devtool;
+let outputFile, mode;
 
 if (env === 'production') {
   mode = 'production';
@@ -15,13 +16,17 @@ if (env === 'production') {
 } else {
   mode = 'development';
   outputFile = libraryName + (env === 'development' ? '.js' : '-[name].js');
-  devtool = 'inline-source-map';
 }
+
+// get git version
+const gitHash = exec('git log -1 --format="%h"').toString().trim();
 
 const config = {
   mode: mode,
-  entry: __dirname + '/src/'+libraryName+'.ts',
-  devtool: devtool,
+  entry: {
+    script: [ __dirname + '/src/'+libraryName+'.ts']
+  },
+  devtool: false,
   output: {
     path: __dirname + '/lib',
     filename: outputFile,
@@ -35,8 +40,26 @@ const config = {
     rules: [
       {
         test: /(\.jsx|\.js)$/,
-        loader: 'babel-loader',
-        exclude: /(node_modules|bower_components)/
+        exclude: /(node_modules|bower_components)/,
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: [
+                [
+                    '@babel/preset-env',
+                    {
+                        "targets": browsers
+                    }
+                ]
+            ],
+            plugins: [
+                [
+                    '@babel/plugin-transform-runtime', 
+                    {"corejs": 3}
+                ]
+            ]
+          }
+        }
       },
       {
         test: /(\.jsx|\.js)$/,
@@ -53,18 +76,24 @@ const config = {
     modules: [path.resolve('./node_modules'), path.resolve('./src')],
     extensions: ['.json', '.js', '.tsx', '.ts']
   },
+  plugins: [
+    new webpack.DefinePlugin({
+      '__VERSION__': JSON.stringify(gitHash)
+    }),
+    new webpack.SourceMapDevToolPlugin({
+      // this is the url of our local sourcemap server
+      // publicPath: 'sourcemaps/',
+      filename: outputFile + '.map'
+    })
+  ],
   optimization: {
-    minimizer: [new UglifyJsPlugin({
-        uglifyOptions: {
-          warnings: false,
-          parse: {},
-          compress: {},
-          mangle: true, // Note `mangle.properties` is `false` by default.
-          output: null,
-          toplevel: false,
-          nameCache: null,
-          ie8: false,
-          keep_fnames: false,
+    minimizer: [ new TerserPlugin({
+        sourceMap: true,
+        terserOptions: {
+          ecma: 5,
+          output: {
+            comments: false
+          },
         },
       })]
   }

@@ -1,4 +1,3 @@
-import 'mdn-polyfills/Object.assign';
 import { ResultCache } from "./result-cache";
 export { ResultCache };
 export interface InvocationOptions {
@@ -19,6 +18,7 @@ export interface InitParameters {
 }
 declare type ProcedureImplementation = (...args: any[]) => any;
 export declare class MiniIframeRPC {
+    static VERSION: string;
     private config;
     private callbacks;
     private registeredProcedures;
