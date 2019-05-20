@@ -1,7 +1,7 @@
 {
   "name": "mini-iframe-rpc",
   "description": "RPC across iframes using postMessage API",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "types": "lib/types/mini-iframe-rpc.d.ts",
   "main": "lib/mini-iframe-rpc.min.js",
   "scripts": {
