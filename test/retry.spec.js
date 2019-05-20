@@ -1,6 +1,5 @@
-const MiniIframeRPC = require('mini-iframe-rpc').MiniIframeRPC;
-const TestBase = require('./test-base.js');
-
+import MiniIframeRPC from 'mini-iframe-rpc';
+import testBase from './test-base';
 
 describe('retries', function() {
 
@@ -11,21 +10,21 @@ describe('retries', function() {
                 timeout: 400,
                 retryLimit: 2}
         });
-        TestBase.defaultBeforeEach({done, parentRPC: window.parentRPC, src: "base/iframe-nocache.html"});
+        testBase.defaultBeforeEach({done, parentRPC: window.parentRPC, src: "base/iframe-nocache.html"});
     });
 
     afterEach((done) => {
-        TestBase.defaultAfterEach({done, parentRPC: window.parentRPC});
+        testBase.defaultAfterEach({done, parentRPC: window.parentRPC});
     });
 
     it('Retries until exhausted', function(done) {
         const retryLimit = 3;
-        TestBase.ready.then(() => TestBase.onScriptRun(`
+        testBase.ready.then(() => testBase.onScriptRun(`
             (function() {
                 let counter=0;
                 childRPC.register("callme", function() {return Promise.reject(counter++);});
             })();`)
-            ).then(() => parentRPC.invoke(TestBase.childWindow(), null, "callme", [], {timeout: 20, retryLimit: retryLimit, retryAllFailures: true})
+            ).then(() => parentRPC.invoke(testBase.childWindow(), null, "callme", [], {timeout: 20, retryLimit: retryLimit, retryAllFailures: true})
             ).then(
                 (result) => done(new Error('Promise should not be resolved')),
                 (reject) => {
@@ -45,7 +44,7 @@ describe('retries', function() {
         const retryLimit = 3;
         const requestMessageBodies = [];
         let listen = false;
-        TestBase.ready.then(() => {
+        testBase.ready.then(() => {
             window.parentRPC.close();
             window.parentRPC = new MiniIframeRPC({
                 'eventCallbacks': {
@@ -59,14 +58,14 @@ describe('retries', function() {
                     }
                 }
             });
-            TestBase.onScriptRun(`
+            testBase.onScriptRun(`
                 (function() {
                     var counter=${retryLimit};
                     childRPC.register("callme", function() {return Promise[counter > 0 ? 'reject' : 'resolve'](counter--);});
                 })();`);
             }).then(() => {
                 listen = true;
-                return parentRPC.invoke(TestBase.childWindow(), null, "callme", [], {timeout: 100, retryLimit: retryLimit, retryAllFailures: true})
+                return parentRPC.invoke(testBase.childWindow(), null, "callme", [], {timeout: 100, retryLimit: retryLimit, retryAllFailures: true})
             }).then(
                 (result) => {
                     listen = false;
@@ -80,7 +79,7 @@ describe('retries', function() {
         const retryLimit = 3;
         const requestMessageBodies = [];
         let listen = false;
-        TestBase.ready.then(() => {
+        testBase.ready.then(() => {
             window.parentRPC.close();
             window.parentRPC = new MiniIframeRPC({'eventCallbacks': {
                     'onRequestRetry': (reason, previousRejectReasons, requestMessageBody) => {
@@ -92,7 +91,7 @@ describe('retries', function() {
                         requestMessageBodies.forEach(r => expect(requestMessageBody).toEqual(r));
                         requestMessageBodies.push(requestMessageBody);
                     }}});
-            TestBase.onScriptRun(`
+            testBase.onScriptRun(`
                 (function() {
                     var counter=${retryLimit}+1;
                     childRPC.register("callme", function() {
@@ -106,7 +105,7 @@ describe('retries', function() {
                 })();`);
             }).then(() => {
                 listen = true;
-                return parentRPC.invoke(TestBase.childWindow(), null, "callme", [], {timeout: 20, retryLimit: retryLimit, retryAllFailures: true})
+                return parentRPC.invoke(testBase.childWindow(), null, "callme", [], {timeout: 20, retryLimit: retryLimit, retryAllFailures: true})
             }).then(
                 (result) => {
                     listen = false;
@@ -120,7 +119,7 @@ describe('retries', function() {
         const retryLimit = 1;
         let gotTimeoutError = false;
         let listen = false;
-        TestBase.ready.then(() => {
+        testBase.ready.then(() => {
             window.parentRPC.close();
             window.parentRPC = new MiniIframeRPC({'eventCallbacks': {
                     'onRequestRetry': (reason, previousRejectReasons, requestMessageBody) => {
@@ -130,7 +129,7 @@ describe('retries', function() {
                         expect(reason.name).toEqual('TimeoutError');
                         gotTimeoutError = true;
                     }}});
-            TestBase.onScriptRun(`
+            testBase.onScriptRun(`
                 (function() {
                     var timeouts = [120, 80];
                     var counter=0;
@@ -145,7 +144,7 @@ describe('retries', function() {
                 })();`);
             }).then(() => {
                 listen = true;
-                return parentRPC.invoke(TestBase.childWindow(), null, "callme", [], {timeout: 100, retryLimit: retryLimit, retryAllFailures: true})
+                return parentRPC.invoke(testBase.childWindow(), null, "callme", [], {timeout: 100, retryLimit: retryLimit, retryAllFailures: true})
             }).then(
                 (result) => {
                     listen = false;
@@ -157,7 +156,7 @@ describe('retries', function() {
 
     it('non retriable errors fail after first attempt', function(done) {
         const retryLimit = 3;
-        TestBase.ready.then(() => parentRPC.invoke(TestBase.childWindow(), null, "callme", [], {timeout: 100, retryLimit: retryLimit, retryAllFailures: false})).then(
+        testBase.ready.then(() => parentRPC.invoke(testBase.childWindow(), null, "callme", [], {timeout: 100, retryLimit: retryLimit, retryAllFailures: false})).then(
                 (result) => done(new Error('Promise should not be resolved')),
                 (reason) => {
                     expect(reason.cause.name).toEqual('ProcedureNotFoundError');
@@ -168,14 +167,14 @@ describe('retries', function() {
 
     it('cached results only computed once', function(done) {
         const retryLimit = 3;
-        TestBase.ready.then(() => {
-            TestBase.onScriptRun(`
+        testBase.ready.then(() => {
+            testBase.onScriptRun(`
                 window.initChildRPC({resultCacheCapacity: 20});
                 (function() {
                     var counter=0;
                     window.childRPC.register("callme", function() {return Promise.reject(counter++);});
                 })();`);
-            }).then(() => window.parentRPC.invoke(TestBase.childWindow(), null, "callme", [], {timeout: 100, retryLimit: retryLimit})
+            }).then(() => window.parentRPC.invoke(testBase.childWindow(), null, "callme", [], {timeout: 100, retryLimit: retryLimit})
             ).then(
                 (result) => done(new Error('Promise should not be resolved')),
                 (reject) => {

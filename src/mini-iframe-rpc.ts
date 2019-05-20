@@ -36,8 +36,6 @@ interface CallbackFunctions {
 
 type ProcedureImplementation = (...args: any[]) => any;
 
-type ProcedureInvocationContext = {requestMessageBody: RequestMessageBody, messageSource: Window, messageOrigin: string};
-
 const RANDOM_BASE = 36;
 const CALLID_LENGTH = 8;
 const DEFAULT_INVOCATION_OPTIONS:InvocationOptions = {
@@ -250,7 +248,7 @@ export class MiniIframeRPC {
             return resultPromise;
         };
         if (this.registeredProcedures[method]) {            
-            getResult()
+            return getResult()
                 .then(
                     (result?:any) => this.sendMessage(
                         messageSource,
@@ -263,7 +261,7 @@ export class MiniIframeRPC {
                     (error?:any) => sendError(error, EvaluationError.name)
                 );            
         } else {
-            sendError(new ProcedureNotFoundError({procedureName: method}));
+            return sendError(new ProcedureNotFoundError({procedureName: method}));
         }
     }
 
@@ -285,10 +283,12 @@ export class MiniIframeRPC {
     private recv = (messageBody:MessageBody, messageSource: Window, messageOrigin: string) => {
         this.internalEventCallback("onReceive", messageBody, messageSource, messageOrigin);    
         if ('method' in messageBody) {
+            // tslint:disable no-floating-promises
             this.handleRequest(messageBody, messageSource, messageOrigin);
-        } else {
+        } else {            
             this.handleResponse(messageBody);
         }            
     }
 
 } // end of class
+export default MiniIframeRPC;

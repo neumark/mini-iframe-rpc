@@ -1,4 +1,5 @@
-const ResultCache = require('mini-iframe-rpc').ResultCache;
+import {ResultCache} from 'mini-iframe-rpc';
+import testBase from './test-base';
 
 describe('result-cache', function() {
     it('eviction test', function(done) {

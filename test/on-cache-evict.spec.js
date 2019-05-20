@@ -1,5 +1,6 @@
-const MiniIframeRPC = require('mini-iframe-rpc').MiniIframeRPC;
-const TestBase = require('./test-base.js');
+import MiniIframeRPC from 'mini-iframe-rpc';
+import testBase from './test-base';
+
 
 describe('on-cache-evict', function() {
     // iframe-on-cache-evict.html
@@ -8,17 +9,17 @@ describe('on-cache-evict', function() {
 
     beforeEach((done) => {
         window.parentRPC = new MiniIframeRPC({'defaultInvocationOptions': {'timeout': 0, 'retryLimit': 0}});
-        TestBase.defaultBeforeEach({done, parentRPC: window.parentRPC, sandbox: 'allow-scripts allow-same-origin', src: 'base/iframe-on-cache-evict.html'});
+        testBase.defaultBeforeEach({done, parentRPC: window.parentRPC, sandbox: 'allow-scripts allow-same-origin', src: 'base/iframe-on-cache-evict.html'});
     });
 
     afterEach((done) => {
-        TestBase.defaultAfterEach({done, parentRPC: window.parentRPC});
+        testBase.defaultAfterEach({done, parentRPC: window.parentRPC});
     });
 
     it('cache eviction internal event callback called on eviction', function(done) {
         let evictionCount = 0;
         let onEvictCalled;
-        TestBase.ready.then(() => {
+        testBase.ready.then(() => {
             onEvictCalled = new Promise((resolve, reject) => {
                 window.parentRPC.register("onEvict", (id, evictedResult) => {
                     // first eviction (where evictionCount === 0) is result of appendScript
@@ -29,7 +30,7 @@ describe('on-cache-evict', function() {
                     evictionCount++;
                 })
             });
-            return TestBase.onScriptRun(`
+            return testBase.onScriptRun(`
                 (function() {
                     let counter=0;
                     return window.childRPC.register("callmeOnEvict", function() {
@@ -40,7 +41,7 @@ describe('on-cache-evict', function() {
         }).then(() => {
             var results = [];
             for (let i = 0; i < 3; i++) {
-                results.push(parentRPC.invoke(TestBase.childWindow(), null, "callmeOnEvict", []));
+                results.push(parentRPC.invoke(testBase.childWindow(), null, "callmeOnEvict", []));
             }
             Promise.all([onEvictCalled, Promise.all(results)]).then(r => {
                 expect(r[0]).toEqual(0);

@@ -1,4 +1,3 @@
-
 const testBase = {
     ready: null,
     childWindowId: 'childIframe',

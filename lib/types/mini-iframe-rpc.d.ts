@@ -39,4 +39,5 @@ export declare class MiniIframeRPC {
     private handleResponse;
     private recv;
 }
+export default MiniIframeRPC;
 //# sourceMappingURL=mini-iframe-rpc.d.ts.map

@@ -1,5 +1,5 @@
-const MiniIframeRPC = require('mini-iframe-rpc').MiniIframeRPC;
-const TestBase = require('./test-base.js');
+import MiniIframeRPC from 'mini-iframe-rpc';
+import testBase from './test-base';
 
 describe('mini-iframe-rpc (same-origin iframe)', function() {
 
@@ -7,21 +7,21 @@ describe('mini-iframe-rpc (same-origin iframe)', function() {
 
     beforeEach((done) => {
         window.parentRPC = new MiniIframeRPC({'defaultInvocationOptions': {'timeout': 0, 'retryLimit': 0}});
-        TestBase.defaultBeforeEach({done, parentRPC: window.parentRPC, sandbox: 'allow-scripts allow-same-origin'});
+        testBase.defaultBeforeEach({done, parentRPC: window.parentRPC, sandbox: 'allow-scripts allow-same-origin'});
     });
 
     afterEach((done) => {
-        TestBase.defaultAfterEach({done, parentRPC: window.parentRPC});
+        testBase.defaultAfterEach({done, parentRPC: window.parentRPC});
     });
 
 
 
     it('works with valid origin whitelist', function(done) {
-        TestBase.ready.then((child) => {
+        testBase.ready.then((child) => {
             // re-init parentRPC to use timeout
             window.parentRPC.close();
             window.parentRPC = new MiniIframeRPC({'originWhitelist': [window.location.origin]});
-            TestBase.onScriptRun('childRPC.register("callme", function() {return window.isChild;});').then(() => 
+            testBase.onScriptRun('childRPC.register("callme", function() {return window.isChild;});').then(() => 
                 parentRPC.invoke(child, null, "callme").then((result) => {
                     expect(result).toBe("child");
                     done();
@@ -31,8 +31,8 @@ describe('mini-iframe-rpc (same-origin iframe)', function() {
     });
 
     it('works with valid origin passed to invoke()', function(done) {
-        TestBase.ready.then((child) => {
-            TestBase.onScriptRun('childRPC.register("callme", function() {return window.isChild;});').then(() => 
+        testBase.ready.then((child) => {
+            testBase.onScriptRun('childRPC.register("callme", function() {return window.isChild;});').then(() => 
                 parentRPC.invoke(child, window.location.origin, "callme").then((result) => {
                     expect(result).toBe("child");
                     done();
@@ -43,16 +43,16 @@ describe('mini-iframe-rpc (same-origin iframe)', function() {
 
     it('times out with invalid origin whitelist', function(done) {
         const originWhitelist = [];
-        TestBase.ready.then((child) => {
+        testBase.ready.then((child) => {
             // re-init parentRPC to use timeout
             window.parentRPC.close();
             // the initial origin whitelist must be configured properly for the 'ready' event
             // to be received, so it's broken later.
             window.parentRPC = new MiniIframeRPC({'defaultInvocationOptions': {'timeout': 100}, 'originWhitelist': originWhitelist});
-            return TestBase.onScriptRun('childRPC.register("callme", function() {return window.isChild;});');
+            return testBase.onScriptRun('childRPC.register("callme", function() {return window.isChild;});');
         }).then(() => {
             originWhitelist.push("https://not.my.origin:69");
-            return window.parentRPC.invoke(TestBase.childWindow(), null, "callme");
+            return window.parentRPC.invoke(testBase.childWindow(), null, "callme");
         }).then(
             (result) => done(new Error('Promise should not be resolved')),
             (reject) => {
@@ -66,11 +66,11 @@ describe('mini-iframe-rpc (same-origin iframe)', function() {
     });
 
     it('times out with invalid origin passed to invoke()', function(done) {
-        TestBase.ready.then((child) => {
+        testBase.ready.then((child) => {
             // re-init parentRPC to use timeout
-            return TestBase.onScriptRun('childRPC.register("callme", function() {return window.isChild;});');
+            return testBase.onScriptRun('childRPC.register("callme", function() {return window.isChild;});');
         }).then(() => {
-            return window.parentRPC.invoke(TestBase.childWindow(), "https://not.my.origin:69", "callme", [], {'timeout': 100});
+            return window.parentRPC.invoke(testBase.childWindow(), "https://not.my.origin:69", "callme", [], {'timeout': 100});
         }).then(
             (result) => done(new Error('Promise should not be resolved')),
             (reject) => {

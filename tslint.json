@@ -15,7 +15,7 @@
     "interface-name": {
       "options": "never-prefix"
     },
-    "no-unsafe-any": true,
+    "no-unsafe-any": false,
     "ban": {
       "options": [
         {
