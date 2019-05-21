@@ -39,12 +39,13 @@ const config = {
   module: {
     rules: [
       {
-        test: /(\.jsx|\.js)$/,
+        test: /(\.ts|\.tsx|\.jsx|\.js)$/,
         exclude: /(node_modules|bower_components)/,
         use: {
           loader: "babel-loader",
           options: {
             presets: [
+                "@babel/typescript",
                 [
                     '@babel/preset-env',
                     {
@@ -53,6 +54,8 @@ const config = {
                 ]
             ],
             plugins: [
+                "@babel/proposal-class-properties",
+                "@babel/proposal-object-rest-spread",
                 [
                     '@babel/plugin-transform-runtime', 
                     {"corejs": 3}
@@ -60,15 +63,6 @@ const config = {
             ]
           }
         }
-      },
-      {
-        test: /(\.jsx|\.js)$/,
-        loader: 'eslint-loader',
-        exclude: /node_modules/
-      },
-      {
-        test: /\.tsx?$/,
-        use: ['awesome-typescript-loader']
       }
     ]
   },
