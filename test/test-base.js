@@ -1,3 +1,5 @@
+import './element.remove'
+
 const testBase = {
     ready: null,
     childWindowId: 'childIframe',

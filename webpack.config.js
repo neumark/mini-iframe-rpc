@@ -1,32 +1,27 @@
 const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
 const path = require('path');
-const env = require('yargs').argv.env; // use --env with webpack 2
+const argv = require('yargs').argv;
 const pkg = require('./package.json');
-const browsers = require('./browsers.json');
 const exec = require('child_process').execSync;
 
-let libraryName = pkg.name;
-
-let outputFile, mode;
-
-if (env === 'production') {
-  mode = 'production';
-  outputFile = libraryName + '.min.js';
-} else {
-  mode = 'development';
-  outputFile = libraryName + (env === 'development' ? '.js' : '-[name].js');
-}
+const libraryName = pkg.name;
+const buildEnv = argv.env || 'development';
+// we can do builds targeting es6, but the size savings are negligible.
+const esVersion = argv.esversion || 'es5';
+// when tests are running, [name] must be part of the filename to avoid collisions
+const outputFile = `${libraryName}${buildEnv === 'production' ? '.min' : '' }${!argv.env ? "-[name]" : ""}.js`;
+const targetedBrowsers = esVersion === 'es5'? require('./browsers.json') : 'defaults';
 
 // get git version
 const gitHash = exec('git log -1 --format="%h"').toString().trim();
 
 const config = {
-  mode: mode,
+  mode: buildEnv,
   entry: {
     script: [ __dirname + '/src/'+libraryName+'.ts']
   },
-  devtool: false,
+  devtool: false, // turned on with SourceMapDevToolPlugin
   output: {
     path: __dirname + '/lib',
     filename: outputFile,
@@ -49,7 +44,10 @@ const config = {
                 [
                     '@babel/preset-env',
                     {
-                        "targets": browsers
+                        "debug": true,
+                        "corejs":3,
+                        "useBuiltIns": "usage",
+                        "targets": targetedBrowsers
                     }
                 ]
             ],
@@ -84,7 +82,7 @@ const config = {
     minimizer: [ new TerserPlugin({
         sourceMap: true,
         terserOptions: {
-          ecma: 5,
+          ecma: (esVersion === "es6") ? 6 : 5,
           output: {
             comments: false
           },
