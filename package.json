@@ -1,10 +1,9 @@
 {
   "name": "mini-iframe-rpc",
   "description": "RPC across iframes using postMessage API",
-  "version": "1.5.0",
-  "types": "lib/types/mini-iframe-rpc.d.ts",
-  "main": "lib/mini-iframe-rpc.min.js",
-  "typings": "lib/types/mini-iframe-rpc.d.ts",
+  "version": "1.6.0",
+  "main": "dist/mini-iframe-rpc.min.js",
+  "typings": "dist/types/mini-iframe-rpc.d.ts",
   "scripts": {
     "build": "webpack --mode development && webpack --mode production",
     "test": "yarn run lint && yarn run unit",

@@ -3,4 +3,4 @@ node_modules
 *.swp
 local.log
 test/build
-lib
+dist

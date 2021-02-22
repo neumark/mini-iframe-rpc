@@ -44,7 +44,7 @@ module.exports = (_, webpackArgv) => ({
   },
   devtool: "source-map",
   output: {
-    path: __dirname + '/lib',
+    path: __dirname + '/dist',
     filename: outputFile(isProduction(webpackArgv)),
     library: libraryName,
     libraryTarget: 'umd',

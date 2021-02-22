@@ -16,16 +16,11 @@
     "stripInternal": true,
     "declaration": true,
     "declarationMap": true,
-    "declarationDir": "lib/types",
-    "outDir": "lib",
+    "declarationDir": "dist/types",
+    "outDir": "dist",
     "resolveJsonModule": true,
     "importHelpers": true,
-    "plugins": [
-      {
-        "name": "typescript-tslint-plugin",
-        "alwaysShowRuleFailuresAsWarnings": false
-      }
-    ]
+    "plugins": []
   },
   "include": [
     "./src"
