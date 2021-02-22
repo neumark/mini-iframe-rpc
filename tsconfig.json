@@ -2,7 +2,7 @@
   "compilerOptions": {
     "noImplicitAny": true,
     "moduleResolution": "node",
-    "module": "esnext",
+    "module": "commonjs",
     "target": "esnext",
     "lib": [
       "dom",
