@@ -7,6 +7,7 @@ import {MessageBody, RequestMessageBody} from "./json-rpc";
 import {PostMessageTransport} from './transport/post-message-transport';
 
 declare var __VERSION__: string;
+declare var __BUILDDATE__: string;
 
 export interface InvocationOptions {
     timeout: number;
@@ -45,7 +46,8 @@ const DEFAULT_INVOCATION_OPTIONS:InvocationOptions = {
 }
 
 export class MiniIframeRPC {
-    static VERSION: string = __VERSION__;        
+    static VERSION: string = __VERSION__;
+    static BUILDDATE: string = __BUILDDATE__;
     private config: InitParameters;
     private callbacks: {[key:string]:CallbackFunctions} = {};
     private registeredProcedures:{[key:string]: ProcedureImplementation} = {};

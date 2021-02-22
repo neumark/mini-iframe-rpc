@@ -1,30 +1,30 @@
 const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
 const path = require('path');
-const argv = require('yargs').argv;
 const pkg = require('./package.json');
 const exec = require('child_process').execSync;
 
 const libraryName = pkg.name;
-const buildEnv = argv.env || 'development';
 // we can do builds targeting es6, but the size savings are negligible.
-const esVersion = argv.esversion || 'es5';
+const esVersion = 'es5';
 // when tests are running, [name] must be part of the filename to avoid collisions
-const outputFile = `${libraryName}${buildEnv === 'production' ? '.min' : '' }${!argv.env ? "-[name]" : ""}.js`;
+const outputFile = prod => `${libraryName}${prod ? '.min' : '' }.js`;
 const targetedBrowsers = esVersion === 'es5'? require('./browsers.json') : 'defaults';
+
+const isProduction = webpackArgv => webpackArgv.mode === 'production';
 
 // get git version
 const gitHash = exec('git log -1 --format="%h"').toString().trim();
 
-const config = {
-  mode: buildEnv,
+module.exports = (_, webpackArgv) => ({
+  mode: webpackArgv.mode,
   entry: {
     script: [ __dirname + '/src/'+libraryName+'.ts']
   },
-  devtool: false, // turned on with SourceMapDevToolPlugin
+  devtool: "source-map",
   output: {
     path: __dirname + '/lib',
-    filename: outputFile,
+    filename: outputFile(isProduction(webpackArgv)),
     library: libraryName,
     libraryTarget: 'umd',
     umdNamedDefine: true,
@@ -70,24 +70,20 @@ const config = {
   },
   plugins: [
     new webpack.DefinePlugin({
-      '__VERSION__': JSON.stringify(gitHash)
+      '__VERSION__': JSON.stringify(gitHash),
+      '__BUILDDATE__': JSON.stringify((new Date()).toISOString())
     }),
-    new webpack.SourceMapDevToolPlugin({
-      // this is the url of our local sourcemap server
-      // publicPath: 'sourcemaps/',
-      filename: outputFile + '.map'
-    })
   ],
   optimization: {
+    minimize: isProduction(webpackArgv),
     minimizer: [ new TerserPlugin({
-        sourceMap: true,
         terserOptions: {
           ecma: (esVersion === "es6") ? 6 : 5,
-          output: {
-            comments: false
-          },
+          parse: {},
+          compress: {},
+          format: { comments: false, },
         },
+        extractComments: false,
       })]
   }
-};
-module.exports = config;
+});
