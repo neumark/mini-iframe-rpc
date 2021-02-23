@@ -2,7 +2,6 @@ const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
 const path = require('path');
 const pkg = require('./package.json');
-const exec = require('child_process').execSync;
 
 const libraryName = pkg.name;
 // we can do builds targeting es6, but the size savings are negligible.
@@ -10,10 +9,10 @@ const esVersion = 'es5';
 // when tests are running, [name] must be part of the filename to avoid collisions
 const outputFile = prod => `${libraryName}${prod ? '.min' : '' }.js`;
 const targetedBrowsers = esVersion === 'es5'? require('./browsers.json') : 'defaults';
-const babelLoaderConfig = prod => ({
+const babelLoaderConfig = {
       loader: "babel-loader",
       options: {
-        presets: prod ? [
+        presets: [
             [
                 '@babel/preset-env',
                 {
@@ -23,19 +22,16 @@ const babelLoaderConfig = prod => ({
                     "targets": targetedBrowsers
                 }
             ]
-        ] : [],
-        plugins: prod ? [
+        ],
+        plugins: [
             [
                 '@babel/plugin-transform-runtime', 
                 {"corejs": 3}
             ]
-        ] : []
+        ]
       }
-    });
+    };
 const isProduction = webpackArgv => webpackArgv.mode === 'production';
-
-// get git version
-const gitHash = exec('git log -1 --format="%h"').toString().trim();
 
 module.exports = (_, webpackArgv) => ({
   mode: webpackArgv.mode,
@@ -56,13 +52,13 @@ module.exports = (_, webpackArgv) => ({
     rules: [
       {
         test: /\.tsx?$/,
-        use: [babelLoaderConfig(isProduction(webpackArgv)), 'ts-loader'],
+        use: [babelLoaderConfig, 'ts-loader'],
         exclude: /node_modules/,
       },
       {
         test: /\.jsx?$/,
         exclude: /node_modules/,
-        use: babelLoaderConfig(isProduction(webpackArgv))
+        use: babelLoaderConfig
       }
     ]
   },
@@ -72,7 +68,7 @@ module.exports = (_, webpackArgv) => ({
   },
   plugins: [
     new webpack.DefinePlugin({
-      '__VERSION__': JSON.stringify(gitHash),
+      '__VERSION__': JSON.stringify(pkg.version),
       '__BUILDDATE__': JSON.stringify((new Date()).toISOString())
     }),
   ],
